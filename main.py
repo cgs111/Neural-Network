@@ -1,49 +1,27 @@
-from numpy import exp, array, random, dot, tanh
 
+from numpy import loadtxt
+import tensorflow
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+# from keras.models import Sequential
+# from keras.layers import Dense
 
-class NeuralNetwork():
-    
-    def __init__(self):
-        
-        random.seed(1)
-        
-        self.weight_matrix = 2 * random.random((3, 1)) - 1
-    
-    def tanh(self, x):
-        return tanh(x)
-
-    def tanh_derivative(self, x):
-        return 1.0 - tanh(x) ** 2
-    
-    def forward_propagation(self, inputs):
-        return self.tanh(dot(inputs, self.weight_matrix))
-    
-    def train(self, train_inputs, train_outputs, num_train_iterations):
-        
-        for interaton in range(num_train_iterations):
-            output = self.forward_propagation(train_inputs)
-
-            error = train_outputs - output
-            adjustment = dot(train_inputs.T, error * 
-                             self.tanh_derivative(output))
-            self.weight_matrix += adjustment
-
-# Driver Code 
-if __name__ == "__main__": 
-      
-    neural_network = NeuralNetwork() 
-    
-    print ('Random weights at the start of training') 
-    print (neural_network.weight_matrix) 
-  
-    train_inputs = array([[0, 0, 1], [1, 1, 1], [1, 0, 1], [0, 1, 1]]) 
-    train_outputs = array([[0, 1, 1, 0]]).T 
-  
-    neural_network.train(train_inputs, train_outputs, 10000) 
-  
-    print ('New weights after training') 
-    print (neural_network.weight_matrix) 
-  
-    # Test the neural network with a new situation. 
-    print ("Testing network on new examples ->") 
-    print (neural_network.forward_propagation(array([1, 0, 0]))) 
+# load the dataset
+dataset = loadtxt("./dataset.txt", delimiter=',')
+# split into input (X) and output (y) variables
+X = dataset[:,0:8]
+y = dataset[:,8]
+# define the keras model
+model = Sequential()
+model.add(Dense(12, input_dim=8, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+# compile the keras model
+model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+# fit the keras model on the dataset
+model.fit(X, y, epochs=150, batch_size=10, verbose=0)
+# make class predictions with the model
+predictions = model.predict_classes(X)
+# summarize the first 5 cases
+for i in range(5):
+	print('%s => %d (expected %d)' % (X[i].tolist(), predictions[i], y[i]))
